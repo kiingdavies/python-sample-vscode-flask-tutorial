@@ -92,7 +92,7 @@ steps:
 
   inputs:
 
-    azureSubscription: '8fe01723-c68a-4842-b6b6-341e5e14be9f'
+    azureSubscription: 'Visual Studio Enterprise Subscription(5)(8fe01723-c68a-4842-b6b6-341e5e14be9f)'
 
     appType: 'functionAppLinux'
 
