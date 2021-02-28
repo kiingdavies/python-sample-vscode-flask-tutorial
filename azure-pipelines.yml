@@ -1,0 +1,103 @@
+# Python package
+
+# Create and test a Python package on multiple Python versions.
+
+# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
+
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+
+trigger: none
+
+#- master
+
+ 
+
+pool:
+
+  vmImage: ubuntu-latest
+
+strategy:
+
+  matrix:
+
+    Python37:
+
+      python.version: '3.7'
+
+    Python38:
+
+      python.version: '3.8'
+
+    
+
+variables:
+
+ system.debug : true
+
+ 
+
+steps:
+
+ 
+
+- task: UsePythonVersion@0
+
+  inputs:
+
+    versionSpec: '$(python.Version)'
+
+  displayName: 'Use Python $(python.Version)'
+
+- script: |
+
+         python -m venv antenv
+
+         source antenv/bin/activate
+
+         python -m pip install --upgrade pip
+
+         pip install setup
+
+         pip install -r .vscode/requirements.txt
+
+  workingDirectory: $(System.DefaultWorkingDirectory)
+
+  displayName: "Install requirements"
+
+- task: ArchiveFiles@2
+
+  inputs:
+
+     rootFolderOrFile: '$(Build.SourcesDirectory)'
+
+     includeRootFolder: false
+
+     archiveType: 'zip'
+
+     archiveFile: '$(Build.ArtifactStagingDirectory)/Application$(Build.BuildId).zip'
+
+     replaceExistingArchive: true
+
+     verbose: # (no value); this input is optional
+
+- publish: '$(Build.ArtifactStagingDirectory)/Application$(Build.BuildId).zip'
+
+  displayName: 'Upload package'
+
+  artifact: $(python.Version).drop
+
+ 
+
+- task: AzureFunctionApp@1
+
+  inputs:
+
+    azureSubscription: 'TicketingHosting(5)(8fe01723-c68a-4842-b6b6-341e5e14be9f)'
+
+    appType: 'functionAppLinux'
+
+    appName: 'test-repro'
+
+    package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+
+    runtimeStack: 'PYTHON|3.7'
